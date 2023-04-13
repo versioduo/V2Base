@@ -6,10 +6,10 @@
 #include <Arduino.h>
 #include <wiring_private.h>
 
-// // TCC from pin, 20kHz
+// // Setup the TCC from the pin number, 20kHz.
 // V2Base::Timer::PWM PWM(V2Base::Timer::PWM::getID(PIN_PWM), 20000);
 //
-// // Switch pin to TCC
+// // Switch the pin to the TCC output.
 // V2Base::Timer::PWM::setupPin(PIN_PWM);
 //
 // PWM.begin();
@@ -21,9 +21,9 @@ public:
   void begin();
 
   void setDuty(uint8_t pin, float duty) {
-    _tcc->CC[getChannel(pin)].reg = (float)_period * duty;
-    while (_tcc->SYNCBUSY.reg & TCC_SYNCBUSY_CC(1 << getChannel(pin)))
-      ;
+    // Double-buffer the new value; it gets only copied to CC with the next
+    // transition, to avoid a possible counter wraparound.
+    _tcc->CCBUF[getChannel(pin)].reg = (float)_period * duty;
   }
 
   static uint8_t getID(uint8_t pin) {

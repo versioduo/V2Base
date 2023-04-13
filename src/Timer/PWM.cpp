@@ -66,6 +66,12 @@ void V2Base::Timer::PWM::begin() {
 
   _tcc->CTRLA.reg |= prescaler | TCC_CTRLA_PRESCSYNC_GCLK;
 
+  // Count downwards; the PWM channel is enabled when the counter matches, and
+  // disabled when the counter reaches zero. That way, enabling depends on the
+  // actual duty cycle, which makes it less likely that all channels will be
+  // enabled at the same time.
+  _tcc->CTRLBSET.reg = TCC_CTRLBSET_DIR;
+
   _tcc->PER.reg = _period;
   while (_tcc->SYNCBUSY.bit.PER)
     ;
