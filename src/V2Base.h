@@ -7,6 +7,9 @@
 #include "Cryptography/Random.h"
 #include "Cryptography/SHA1.h"
 #include "GPIO/GPIO.h"
+#if defined(I2S)
+#include "I2S/I2S.h"
+#endif
 #include "Memory/EEPROM.h"
 #include "Memory/Firmware.h"
 #include "Memory/Flash.h"
