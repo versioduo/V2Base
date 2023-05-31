@@ -21,25 +21,25 @@ public:
     // Use the 48 Mhz generic clock.
     I2S->CTRLA.bit.ENABLE = 0;
     MCLK->APBDMASK.reg |= MCLK_APBDMASK_I2S;
-    GCLK->PCHCTRL[I2S_GCLK_ID_0].reg = GCLK_PCHCTRL_GEN_GCLK1_Val | (1 << GCLK_PCHCTRL_CHEN_Pos);
-    GCLK->PCHCTRL[I2S_GCLK_ID_1].reg = GCLK_PCHCTRL_GEN_GCLK1_Val | (1 << GCLK_PCHCTRL_CHEN_Pos);
+    GCLK->PCHCTRL[I2S_GCLK_ID_0].reg = GCLK_PCHCTRL_GEN_GCLK0_Val | (1 << GCLK_PCHCTRL_CHEN_Pos);
+    GCLK->PCHCTRL[I2S_GCLK_ID_1].reg = GCLK_PCHCTRL_GEN_GCLK0_Val | (1 << GCLK_PCHCTRL_CHEN_Pos);
 
-    const uint32_t sampleRate = 44100;
+    const uint32_t sampleRate = 48000;
     const uint32_t bits       = 32;
     const uint32_t numSlots   = 2;
     const uint32_t mckMult    = 64;
 
     // The Host Clock divider (MCLK). These values result in the closest match to the next integer.
-    // 48 Mhz / (44.1 kHz * 64) = 17.0068
+    // 120 MHz / (48 kHz * 64) = 39.062
     const uint32_t mckFreq   = sampleRate * mckMult;
-    const uint32_t mckoutdiv = 48000000 / mckFreq;
+    const uint32_t mckoutdiv = 120000000 / mckFreq;
 
     // The Serial Clock divider (SCK). MCLK and SCK need to have the same phase.
-    // 48 Mhz / (2 * 32 * 44.1 kHz) = 17.0068
+    // 120 MHz / (48 kHz * 64) = 39.062
     const uint32_t frameSize = numSlots * bits;
     const uint32_t sckFreq   = sampleRate * frameSize;
-    const uint32_t mckdiv    = 48000000 / sckFreq;
-    _sampleRate              = 48000000.f / (float)(mckdiv * frameSize);
+    const uint32_t mckdiv    = 120000000 / sckFreq;
+    _samplerate              = 120000000.f / (float)(mckdiv * frameSize);
 
     I2S->CTRLA.bit.SWRST = 1;
     while (I2S->SYNCBUSY.bit.SWRST)
@@ -77,8 +77,8 @@ public:
       ;
   }
 
-  const float getSamplerate() const {
-    return _sampleRate;
+  constexpr float getSamplerate() const {
+    return _samplerate;
   }
 
   bool txReady() const {
@@ -104,6 +104,6 @@ private:
     uint8_t sd;
     uint8_t mck;
   } _pin;
-  float _sampleRate{};
+  float _samplerate{};
 };
 };
