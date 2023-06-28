@@ -21,16 +21,19 @@ public:
   void begin();
 
   void setDuty(uint8_t pin, float duty) {
+    while (_tcc->SYNCBUSY.reg & TCC_SYNCBUSY_CC(1 << getChannel(pin)))
+      ;
+
     // Double-buffer the new value; it gets only copied to CC with the next
     // transition, to avoid a possible counter wraparound.
     _tcc->CCBUF[getChannel(pin)].reg = (float)_period * duty;
   }
 
-  static uint8_t getID(uint8_t pin) {
+  static constexpr uint8_t getID(uint8_t pin) {
     return GetTCNumber(g_APinDescription[pin].ulTCChannel);
   }
 
-  static uint8_t getChannel(uint8_t pin) {
+  static constexpr uint8_t getChannel(uint8_t pin) {
     return GetTCChannelNumber(g_APinDescription[pin].ulTCChannel);
   }
 
