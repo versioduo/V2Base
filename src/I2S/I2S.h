@@ -24,6 +24,10 @@ public:
     GCLK->PCHCTRL[I2S_GCLK_ID_0].reg = GCLK_PCHCTRL_GEN_GCLK0_Val | (1 << GCLK_PCHCTRL_CHEN_Pos);
     GCLK->PCHCTRL[I2S_GCLK_ID_1].reg = GCLK_PCHCTRL_GEN_GCLK0_Val | (1 << GCLK_PCHCTRL_CHEN_Pos);
 
+    reset();
+  }
+
+  void reset() {
     const uint32_t sampleRate = 48000;
     const uint32_t bits       = 32;
     const uint32_t numSlots   = 2;
