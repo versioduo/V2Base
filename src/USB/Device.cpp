@@ -16,7 +16,7 @@ uint32_t V2Base::USBDevice::getConnectionSequence() {
   return _connectionSequence;
 }
 
-void V2Base::USBDevice::readSerial(char *serial) {
+void V2Base::USBDevice::readSerial(char* serial) {
   uint8_t id[16] __attribute__((aligned(4)));
   TinyUSB_Port_GetSerialNumber(id);
   for (uint8_t i = 0; i < 16; i++)

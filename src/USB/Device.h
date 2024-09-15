@@ -8,91 +8,98 @@
 #undef USBDevice
 
 namespace V2Base {
-class USBDevice {
-public:
-  void begin() {
-    _device.device->setConfigurationBuffer(_device.descriptor, sizeof(_device.descriptor));
-  }
-
-  void setVIDPID(uint16_t vid, uint16_t pid) {
-    _device.device->setID(vid, pid);
-  }
-
-  void setName(const char *name) {
-    _device.device->setProductDescriptor(name);
-  }
-
-  void setVersion(uint16_t version) {
-    // USB uses two two-digit BCD numbers; version 1 will be shown as 0.01, version 815 as 8.15.
-    uint16_t bcd = 0;
-    for (uint8_t shift = 0; shift < 16; shift += 4) {
-      bcd += (version % 10) << shift;
-      version /= 10;
+  class USBDevice {
+  public:
+    void begin() {
+      _device.device->setConfigurationBuffer(_device.descriptor, sizeof(_device.descriptor));
     }
 
-    _device.device->setDeviceVersion(bcd);
-  }
+    void setVIDPID(uint16_t vid, uint16_t pid) {
+      _device.device->setID(vid, pid);
+    }
 
-  void setConfigureURL(const char *url, const char *name) {
-    _webUSB.descriptor.bLength +=
-      snprintf(_webUSB.descriptor.url, sizeof(_webUSB.descriptor.url), "%s?connect=%s", url + 8, name);
-    _webUSB.interface.begin();
-    _webUSB.interface.setLandingPage(&_webUSB.descriptor);
-  }
+    void setVendor(const char* name) {
+      _device.device->setManufacturerDescriptor(name);
+    }
 
-  void attach() {
-    _midi.interface.begin();
-  }
+    void setName(const char* name) {
+      _device.device->setProductDescriptor(name);
+    }
 
-  uint32_t getConnectionSequence();
-  void readSerial(char *serial);
+    void setVersion(uint16_t version) {
+      // USB uses two two-digit BCD numbers; version 1 will be shown as 0.01, version 815 as 8.15.
+      uint16_t bcd = 0;
+      for (uint8_t shift = 0; shift < 16; shift += 4) {
+        bcd += (version % 10) << shift;
+        version /= 10;
+      }
 
-  bool connected() {
-    return _device.device->ready();
-  }
+      _device.device->setDeviceVersion(bcd);
+    }
 
-  bool idle() {
-    return (unsigned long)(micros() - _device.usec) > 1000;
-  }
+    void setConfigureURL(const char* url, const char* name) {
+      _webUSB.descriptor.bLength += snprintf(_webUSB.descriptor.url,
+                                             sizeof(_webUSB.descriptor.url),
+                                             "%s?connect=%s",
+                                             url + 8,
+                                             name);
+      _webUSB.interface.begin();
+      _webUSB.interface.setLandingPage(&_webUSB.descriptor);
+    }
 
-  // MIDI interface
-  void setPorts(uint8_t nPorts) {
-    _midi.interface.setCables(nPorts);
-  }
+    void attach() {
+      _midi.interface.begin();
+    }
 
-  void setPortName(uint8_t port, const char *name) {
-    _midi.interface.setCableName(port, name);
-  }
+    uint32_t getConnectionSequence();
+    void     readSerial(char* serial);
 
-  bool send(uint8_t packet[4]);
-  bool receive(uint8_t packet[4]);
+    bool connected() {
+      return _device.device->ready();
+    }
 
-private:
-  struct {
-    // The large descriptor is needed to carry the data for more than 3 MIDI ports.
-    uint8_t descriptor[1024];
+    bool idle() {
+      return (unsigned long)(micros() - _device.usec) > 1000;
+    }
 
-    // The tinyUSB device created by the Arduino core.
-    Adafruit_USBD_Device *device{&TinyUSBDevice};
+    // MIDI interface
+    void setPorts(uint8_t nPorts) {
+      _midi.interface.setCables(nPorts);
+    }
 
-    unsigned long usec{};
-  } _device;
+    void setPortName(uint8_t port, const char* name) {
+      _midi.interface.setCableName(port, name);
+    }
 
-  // The MIDI Interface of the device.
-  struct {
-    Adafruit_USBD_MIDI interface;
-  } _midi;
+    bool send(uint8_t packet[4]);
+    bool receive(uint8_t packet[4]);
 
-  // The WebUSB interface to annouce the configuration URL to the browser.
-  struct {
+  private:
     struct {
-      uint8_t bLength{3};
-      uint8_t bDescriptorType{3}; // WEBUSB_URL
-      uint8_t bScheme{1};         // https://
-      char url[128]{};
-    } descriptor;
+      // The large descriptor is needed to carry the data for more than 3 MIDI ports.
+      uint8_t descriptor[1024];
 
-    Adafruit_USBD_WebUSB interface;
-  } _webUSB;
-};
+      // The tinyUSB device created by the Arduino core.
+      Adafruit_USBD_Device* device{&TinyUSBDevice};
+
+      unsigned long usec{};
+    } _device;
+
+    // The MIDI Interface of the device.
+    struct {
+      Adafruit_USBD_MIDI interface;
+    } _midi;
+
+    // The WebUSB interface to annouce the configuration URL to the browser.
+    struct {
+      struct {
+        uint8_t bLength{3};
+        uint8_t bDescriptorType{3}; // WEBUSB_URL
+        uint8_t bScheme{1};         // https://
+        char    url[128]{};
+      } descriptor;
+
+      Adafruit_USBD_WebUSB interface;
+    } _webUSB;
+  };
 };
